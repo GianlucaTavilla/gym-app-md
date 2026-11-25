@@ -6,7 +6,7 @@ Phase 1 ist das MVP laut `SPEC.md` (Prioritäten, Nachricht 12) und hat höchste
 
 | ID | Name | Phase | Status | BR / Entitäten |
 |---|---|---|---|---|
-| F-001 | Kurs online buchen | 1 | in Arbeit | BR1, BR3 · Mitglied, Mitgliedschaft, Tarif, Kursart, Kurstermin, Buchung |
+| F-001 | Kurs online buchen | 1 | fertig | BR1, BR3 · Mitglied, Mitgliedschaft, Tarif, Kursart, Kurstermin, Buchung |
 | F-002 | Auf die Warteliste und nachrücken | 1 | offen | BR1 · Buchung, Kurstermin, Kursart |
 | F-003 | Buchung stornieren und Stornogebühr | 1 | offen | BR2, BR3 · Buchung, Mitgliedschaft, Tarif |
 | F-004 | Mitgliedschaft pausieren, kündigen und sperren | 1 | offen | BR4 · Mitglied, Mitgliedschaft, Pause, Buchung |

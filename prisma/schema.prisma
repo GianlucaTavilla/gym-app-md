@@ -6,3 +6,105 @@ generator client {
 datasource db {
   provider = "sqlite"
 }
+
+// ---------------------------------------------------------------------------
+// Datenmodell nach SPEC.md. Feldnamen folgen den SPEC-Attributen (snake_case),
+// damit die Herkunft jeder Spalte direkt sichtbar bleibt.
+//
+// F-001 benoetigt: Tarif, Mitglied, Mitgliedschaft, Kursart, Trainer,
+// Kurstermin, Buchung. Pause und die Trainer-Kursart-Verknuepfung (B6) kommen
+// mit spaeteren Features (F-004 bzw. F-010).
+//
+// Hinweis: SQLite unterstuetzt in Prisma keine Enum-Typen, daher sind die
+// SPEC-Aufzaehlungen (status, format, ...) als String modelliert und werden
+// in lib/rules.ts gegen feste Werte geprueft.
+// ---------------------------------------------------------------------------
+
+// SPEC: tarif_id, name (Basic/Plus/Premium), monatsbeitrag (Hoehe offen),
+// max_buchungen_pro_monat (Basic 5, Plus offen, Premium unbegrenzt),
+// videozugang (Basic nein, Plus/Premium ja), stornofrei (nur Premium).
+model Tarif {
+  tarif_id                Int             @id @default(autoincrement())
+  name                    String          @unique
+  monatsbeitrag           Int? // in Cent; SPEC: Hoehe offen -> kein Wert erfunden
+  max_buchungen_pro_monat Int? // Basic 5; Plus offen -> kein Wert erfunden
+  unbegrenzt              Boolean         @default(false) // SPEC: Premium unbegrenzt
+  videozugang             Boolean         @default(false)
+  stornofrei              Boolean         @default(false)
+  mitgliedschaften        Mitgliedschaft[]
+}
+
+// SPEC: mitglied_nr (Schluessel), name, kontakt (WhatsApp, E-Mail), eintrittsdatum.
+model Mitglied {
+  mitglied_nr     String          @id
+  name            String
+  whatsapp        String?
+  email           String?
+  eintrittsdatum  DateTime
+  mitgliedschaften Mitgliedschaft[]
+  buchungen       Buchung[]
+}
+
+// SPEC: mitgliedschaft_id, mitglied -> Mitglied, tarif -> Tarif, beginn,
+// vertragsende, status (aktiv/pausiert/gekuendigt/inaktiv), buchungssperre_bis.
+model Mitgliedschaft {
+  mitgliedschaft_id  Int        @id @default(autoincrement())
+  mitglied_nr        String
+  mitglied           Mitglied   @relation(fields: [mitglied_nr], references: [mitglied_nr])
+  tarif_id           Int
+  tarif              Tarif      @relation(fields: [tarif_id], references: [tarif_id])
+  beginn             DateTime
+  vertragsende       DateTime?
+  status             String // aktiv / pausiert / gekuendigt / inaktiv
+  buchungssperre_bis DateTime?
+}
+
+// SPEC: kursart_id, name (Yoga, Pilates, Spinning, HIIT, Bodyworkout/Functional),
+// max_teilnehmer (Yoga 15, Spinning 12, Bodyworkout/Functional 20).
+model Kursart {
+  kursart_id     Int          @id @default(autoincrement())
+  name           String       @unique
+  max_teilnehmer Int? // Pilates/HIIT: in SPEC nicht genannt -> kein Wert erfunden
+  kurstermine    Kurstermin[]
+}
+
+// SPEC: trainer_id, name, anstellungsart (fest/Honorar).
+model Trainer {
+  trainer_id     Int          @id @default(autoincrement())
+  name           String
+  anstellungsart String // fest / Honorar
+  kurstermine    Kurstermin[]
+}
+
+// SPEC: termin_id, kursart -> Kursart, trainer -> Trainer, datum_uhrzeit,
+// format (Studio/Online), zoom_link (nur Online).
+model Kurstermin {
+  termin_id     Int       @id @default(autoincrement())
+  kursart_id    Int
+  kursart       Kursart   @relation(fields: [kursart_id], references: [kursart_id])
+  trainer_id    Int
+  trainer       Trainer   @relation(fields: [trainer_id], references: [trainer_id])
+  datum_uhrzeit DateTime
+  format        String // Studio / Online
+  zoom_link     String?
+  buchungen     Buchung[]
+}
+
+// SPEC: buchung_id, mitglied -> Mitglied, kurstermin -> Kurstermin,
+// status (gebucht/Warteliste/storniert), zeitpunkt, storniert_am,
+// anwesenheit (teilgenommen/nicht erschienen), stornogebuehr, gebuehr_status
+// (offen/bezahlt/erlassen), erlass_grund.
+model Buchung {
+  buchung_id     Int        @id @default(autoincrement())
+  mitglied_nr    String
+  mitglied       Mitglied   @relation(fields: [mitglied_nr], references: [mitglied_nr])
+  termin_id      Int
+  kurstermin     Kurstermin @relation(fields: [termin_id], references: [termin_id])
+  status         String // gebucht / Warteliste / storniert
+  zeitpunkt      DateTime   @default(now())
+  storniert_am   DateTime?
+  anwesenheit    String? // teilgenommen / nicht erschienen
+  stornogebuehr  Int? // Pauschale in Cent, falls faellig
+  gebuehr_status String? // offen / bezahlt / erlassen
+  erlass_grund   String?
+}
