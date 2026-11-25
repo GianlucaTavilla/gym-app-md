@@ -4,11 +4,11 @@ Briefing für den Coding-Agenten. Lies diese Datei zu Beginn jeder Session, dana
 
 ## Projekt
 
-<Ein Satz: Was macht die App, für wen?> Fachliche Grundlage ist `SPEC.md` im Repo-Root. Ändere die SPEC.md nie ohne Rückfrage.
+FitZone Berlin ist ein Fitness-Studio mit Online-Kursen und rund 600 Mitgliedern; diese App ersetzt Lisas Excel- und WhatsApp-Verwaltung und lässt Mitglieder Kurse online buchen, auf die Warteliste setzen und stornieren. Fachliche Grundlage ist `SPEC.md` im Repo-Root. Ändere die SPEC.md nie ohne Rückfrage.
 
 ## Stack
 
-- Framework: <z. B. Next.js>
+- Framework: Next.js
 - Datenbank: SQLite über Prisma 7 (lokale Datei, kein Server). Installieren mit `npm install prisma@7 @prisma/client@7`, keine Vorabversion.
 - UI: Tailwind CSS, Gestaltung siehe Abschnitt „Design“
 - Start: `npm run dev`, danach http://localhost:3000
